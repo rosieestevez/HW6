@@ -1,0 +1,137 @@
+---
+title: "HW6"
+output: html_document
+date: "2024-03-28"
+---
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+require(class)
+require(caret)
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. Study Group: Chris and Isamari
+
+2. Research Article Summary
+
+Ruglass, Espinosa, et al. (2020)
+
+This study focuses on cannabis usage in a sample of 1,123 college students from three different university states with dissimilar cannabis laws. The study also looked into demographic characteristics and social contexts of cannabis use. The first school was in a state where cannabis was criminalized, the second school was in a state where cannabis was decriminalized, and the third school was in a state where cannabis was legal. Results yielded six profiles: Low Motives, Low to Moderate Enhance, High Enhance, High Enhance & Social + Moderate Expand, High Enhance & Cope, and High Motives. There were two waves of data collection, three months apart. Significant differences were found across states/schools; students in the second school (decriminalized) adopted high approach motives, similar to the third school (legal). High approach motives for cannabis use relating to enhancement were associated with higher alcohol use, and high avoidance motives were correlated to increased negative affect. Female students were also more likely to use avoidance motives, and male students were more likely to use approach motives. The results varied with gender, social factors, and demographics, linking cannabis motives significantly with these factors. 
+
+
+ 
+
+3. Veteran Status, Age, Adverse Childhood Experience Drugs, Children
+
+```{r}
+select1 <- !is.na(brfss22$MARIJAN1)
+brfss_marijan <- subset(brfss22, select1 )
+
+```
+
+```{r}
+brfss22$income_midpoint <- fct_recode(brfss22$INCOME3, 
+                        "7500" = "Household income less than $10,000",
+                        "12500" = "Less than $15,000 ($10,000 to less than $15,000)",
+                        "17500" = "Less than $20,000 ($15,000 to less than $20,000) ",
+                        "22500" = "Less than $25,000 ($20,000 to less than $25,000) ",
+                        "30000" = "Less than $35,000 ($25,000 to less than $35,000) ",
+                        "42500" = "Less than $50,000 ($35,000 to less than $50,000) ",
+                        "62500" = "Less than $75,000 ($50,000 to less than $75,000)",
+                        "87500" = "Less than $100,000 ($75,000 to less than $100,000)",
+                        "125000" = "Less than $150,000 ($100,000 to less than $150,000)",
+                        "175000" = "Less than $200,000 ($150,000 to less than $200,000)",
+                        "210000" = "$200,000 or more",
+                        NULL = "Dont know/Not sure",
+                        NULL = "Refused")
+```
+```{r}
+brfss22$income_midpoint <- as.numeric(levels(brfss22$income_midpoint))[brfss22$income_midpoint]
+```
+
+```{r}
+brfss22$Educ_number <- fct_recode(brfss22$EDUCA, 
+                                  "0" = "Never attended school or only kindergarten", 
+                                  "4.5" = "Grades 1 through 8 (Elementary)",
+                                  "10" = "Grades 9 through 11 (Some high school)",
+                                  "12" = "Grade 12 or GED (High school graduate)",
+                                  "14" = "College 1 year to 3 years (Some college or technical school)",
+                                  "16" = "College 4 years or more (College graduate)",
+                                  NULL = "Refused" )
+```
+
+```{r}
+brfss22$Educ_number <- as.numeric(levels(brfss22$Educ_number))[brfss22$Educ_number]
+```
+
+
+```{r}
+brfss22$Age_midpt <- fct_recode(brfss22$X_AGEG5YR, "21" = "Age 18 to 24",
+                                      "27" = "Age 25 to 29", "32" = "Age 30 to 34",
+                                      "37" = "Age 35 to 39", "42" = "Age 40 to 44",
+                                      "47" = "Age 45 to 49", "52" = "Age 50 to 54",
+                                      "57" = "Age 55 to 59", "62" = "Age 60 to 64",
+                                      "67" = "Age 65 to 69", "72" = "Age 70 to 74",
+                                      "77" = "Age 75 to 79", "82" = "Age 80 or older",
+                                      NULL = "Dont know/Refused/Missing")
+```
+
+```{r}
+brfss22$Age_midpt <- as.numeric(levels(brfss22$Age_midpt))[brfss22$Age_midpt]
+```
+
+```{r}
+brfss22$ACEDRINK_recode <- fct_recode(brfss22$ACEDRINK, 
+                                        "Yes" = "Yes, Adverse Childhood Exper, lived with someone who was a problem drinker or alcoholic",
+                                "No" = "No", 
+                                NULL = "dont know not sure",
+                                NULL = "refused")
+```
+
+```{r}
+brfss22$VETERAN <- fct_recode(brfss22$VETERAN3,
+                               "No" = "No",
+                               "Yes" = "Yes a veteran")
+```
+```{r}
+brfss22$VETERAN <- as.numeric(levels(brfss22$VETERAN3))[brfss22$VETERAN3]
+```
+
+```{r}
+model_1 <- lm(MARIJAN1 ~ Age_midpt + VETERAN3 + ACEDRINK + X_PRACE2 + X_HISPANC, data = brfss_marijan)
+```
+
+```{r}
+summary(model_1)
+```
+
+```{r}
+model_2 <- lm(MARIJAN1 ~ Age_midpt + VETERAN + ACEDRINK + CHILDREN, data = brfss_marijan)
+```
+
+```{r}
+require(stargazer)
+```
+
+```{r}
+stargazer(model_2, type = "text")
+```
+
+```{r}
+p_cannabis_parents <- ggplot(data = brfss_marijan,
+                       mapping = aes(x = CHILDREN,
+                                     y = MARIJAN1))
+
+```
+
+```{r}
+p_cannabis_parents + geom_smooth()
+```
+
+
